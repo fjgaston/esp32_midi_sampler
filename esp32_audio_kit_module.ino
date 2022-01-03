@@ -1,60 +1,36 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * this file contains basic stuff to work with the ESP32 Audio Kit V2.2 module
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+ * Author: Marcel Licence
  */
-
-/**
- * @file esp32_audio_kit_module.ino
- * @author Marcel Licence
- * @date 12.10.2021
- *
- * @brief This file contains basic stuff to work with the ESP32 Audio Kit V2.2 module
- *
- * @see ESP32 Audio Kit AC101 codec failure - Get synthesizer projects working based on ES8388 - https://youtu.be/8UB3fYPjqSk
- * @see Instructions: http://myosuploads3.banggood.com/products/20210306/20210306011116instruction.pdf
- * @see Schematic: https://docs.ai-thinker.com/_media/esp32-audio-kit_v2.2_sch.pdf
- */
-
 
 #ifdef __CDT_PARSER__
 #include <cdt.h>
 #endif
 
-
+/*
+ * Instructions: http://myosuploads3.banggood.com/products/20210306/20210306011116instruction.pdf
+ *
+ * Schematic: https://docs.ai-thinker.com/_media/esp32-audio-kit_v2.2_sch.pdf
+ */
 #ifdef ESP32_AUDIO_KIT
 
-#ifdef AC101_ENABLED
 #include "AC101.h" /* only compatible with forked repo: https://github.com/marcel-licence/AC101 */
-#endif
-
 
 //#define BUTTON_DEBUG_MSG
 
+
+/* AC101 pins */
+#define IIS_SCLK                    5
+#define IIS_LCLK                    26
+#define IIS_DSIN                    25
+#define IIS_DSOUT                   35
+
+#define IIC_CLK                     23
+#define IIC_DATA                    18
+
+#define GPIO_PA_EN                  GPIO_NUM_21
+#define GPIO_SEL_PA_EN              GPIO_SEL_21
 
 
 #define PIN_LED4    (22)
@@ -66,11 +42,11 @@
  * when not modified and R66-R70 are placed on the board
  */
 #define PIN_KEY_1                   (36)
-#define PIN_KEY_2                   (13)
-#define PIN_KEY_3                   (19)
-#define PIN_KEY_4                   (23)
-#define PIN_KEY_5                   (18)
-#define PIN_KEY_6                   (5)
+#define PIN_KEY_2                   (39)
+#define PIN_KEY_3                   (32)
+#define PIN_KEY_4                   (33)
+#define PIN_KEY_5                   (27)
+#define PIN_KEY_6                   (13)
 
 #define PIN_PLAY                    PIN_KEY_4
 #define PIN_VOL_UP                  PIN_KEY_5
@@ -98,9 +74,7 @@ uint32_t keyMax[7] = {4095 + 32, 0 + 32, 525 + 32, 1006 + 32, 1374 + 32, 1570 + 
 #define MCLK_CH 0
 #define PWM_BIT 1
 
-#ifdef AC101_ENABLED
 static AC101 ac;
-#endif
 
 /* actually only supporting 16 bit */
 #define SAMPLE_SIZE_16BIT
@@ -120,7 +94,6 @@ static AC101 ac;
 typedef void(*audioKitButtonCb)(uint8_t, uint8_t);
 extern audioKitButtonCb audioKitButtonCallback;
 
-#ifdef AC101_ENABLED
 /*
  * this function could be used to set up the masterclock
  * it is not necessary to use the ac101
@@ -141,7 +114,7 @@ void ac101_mclk_setup()
 void ac101_setup()
 {
     Serial.printf("Connect to AC101 codec... ");
-    while (not ac.begin(AC101_PIN_SDA, AC101_PIN_SCL))
+    while (not ac.begin(IIC_DATA, IIC_CLK))
     {
         Serial.printf("Failed!\n");
         delay(1000);
@@ -189,7 +162,6 @@ void ac101_setup()
     digitalWrite(GPIO_PA_EN, HIGH);
 #endif
 }
-#endif /* #ifdef AC101_ENABLED */
 
 /*
  * pullup required to enable reading the buttons (buttons will connect them to ground if pressed)
@@ -209,7 +181,6 @@ void button_setup()
 #endif
 }
 
-#ifdef AC101_ENABLED
 /*
  * selects the microphone as audio source
  * handle with care: mic is very sensitive and might cause feedback using amp!!!
@@ -226,7 +197,6 @@ void ac101_setSourceLine(void)
 {
     ac.SetLineSource();
 }
-#endif /* #ifdef AC101_ENABLED */
 
 /*
  * very bad implementation checking the button state
@@ -324,4 +294,3 @@ void button_loop()
 }
 
 #endif
-

@@ -1,42 +1,11 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * as5600_module.ino
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  Created on: 25.07.2021
+ *      Author: PC
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+ *      Datasheet: https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf
  */
-
-/**
- * @file as5600_module.ino
- * @author Marcel Licence
- * @date 25.07.2021
- *
- * @brief  Implementation to use the AS5600 for scratching via I2C
- * @see https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf
- */
-
 
 #ifdef __CDT_PARSER__
 #include <cdt.h>
@@ -91,7 +60,7 @@ uint16_t AS5600_ReadReg_u16(uint8_t reg)
     return (((uint16_t)Wire.read()) << 8) + (uint16_t)Wire.read();
 }
 
-#define REG_CONF        0x07
+#define REG_CONF 		0x07
 #define REG_RAW_ANLGE   0x0C
 
 void AS5600_Setup()

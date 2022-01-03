@@ -1,50 +1,10 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * This module is only to calculate the vu-meters and drive the ws2812 8x8 led module​
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Author: Marcel Licence
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
- */
-
-/**
- * @file vu_meter_module.ino
- * @author Marcel Licence
- * @date 25.04.2021
- *
- * @brief  This module is only to calculate the vu-meters and drive the ws2812 8x8 led module​
  * Credits for HSVtoRGB function is unknown
  */
-
-
-
-#define VU_METER_COUNT  8
-
-#define VU_METER_DECREASE_MULTIPLIER 0.98f
-
-
-#ifdef LED_STRIP_PIN
 
 #include <Adafruit_NeoPixel.h>
 
@@ -53,9 +13,9 @@ uint32_t brightness = 4; /* I am using a low value to keep the LED's dark */
 /* pixel count of the 8x8 module */
 #define NUMPIXELS   (8*8)
 
+#define VU_METER_DECREASE_MULTIPLIER 0.98f
 
-
-
+#define VU_METER_COUNT  8
 
 struct pixel_rgb
 {
@@ -66,19 +26,16 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, LED_STRIP_PIN,
                           NEO_GRB + NEO_KHZ800);
 
 struct pixel_rgb pixels[NUMPIXELS] = {0};
-#endif
 
 /* 2 storages to allow double buffering */
 float vuMeterValueInBf[VU_METER_COUNT];
 float vuMeterValueDisp[VU_METER_COUNT];
 
-void VuMeterMatrix_Init(void)
+void VuMeter_Init(void)
 {
-#ifdef LED_STRIP_PIN
     strip.begin();
     strip.show();
-#endif
-    VuMeterMatrix_Process();
+    VuMeter_Process();
 }
 
 /* found this function somewhere in some repo. source cannot be identified anymore */
@@ -140,7 +97,7 @@ void HSVtoRGB(int hue, int sat, int val, uint8_t colors[3])
     }
 }
 
-void VuMeterMatrix_Process(void)
+void VuMeter_Process(void)
 {
     memcpy(vuMeterValueDisp, vuMeterValueInBf, sizeof(vuMeterValueDisp));
     for (int i = 0; i < 8; i++)
@@ -149,9 +106,8 @@ void VuMeterMatrix_Process(void)
     }
 }
 
-void VuMeterMatrix_Display(void)
+void VuMeter_Display(void)
 {
-#ifdef LED_STRIP_PIN
     for (int i = 0; i < NUMPIXELS; i++)
     {
         int row = (i - (i % 8)) >> 3;
@@ -192,10 +148,9 @@ void VuMeterMatrix_Display(void)
         strip.setPixelColor(i, pixels[i].r, pixels[i].g, pixels[i].b);
     }
     strip.show();
-#endif
 }
 
-float *VuMeterMatrix_GetPtr(uint8_t index)
+float *VuMeter_GetPtr(uint8_t index)
 {
     if (index >= VU_METER_COUNT)
     {
@@ -204,10 +159,7 @@ float *VuMeterMatrix_GetPtr(uint8_t index)
     return &vuMeterValueInBf[index];
 }
 
-void VuMeterMatrix_SetBrighness(uint8_t unused, float value)
+void VuMeter_SetBrighness(uint8_t unused, float value)
 {
-#ifdef LED_STRIP_PIN
     brightness = (value * 255.0f);
-#endif
 }
-

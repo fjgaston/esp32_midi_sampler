@@ -1,34 +1,4 @@
 /*
- * Copyright (c) 2021 Marcel Licence
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
- */
-
-/*
  * this file contains the implementation of the sampling core
  * a big PSRAM buffer will be allocated
  * you can record to the buffer and playback samples
@@ -54,7 +24,7 @@
 
 #define SAMPLE_MAX_PLAYERS  8 /* max polyphony, higher values 'may' not be processed in time */
 
-#define MAX_FILENAME_LENGTH 64
+#define MAX_FILENAME_LENGTH	64
 
 /*
  * little helpers
@@ -130,7 +100,7 @@ struct sample_player_s samplePlayers[SAMPLE_MAX_PLAYERS];
 
 void (*sampler_recordDoneCb)(void) = NULL;
 
-uint32_t sampleRecordCount = 0; /*!< count of samples in buffer and valid sampleRecords */
+// uint32_t sampleRecordCount = 0; /*!< count of samples in buffer and valid sampleRecords */
 uint32_t sampleStorageInPos = 0; /*!< next free sample in sampleStorage */
 uint32_t sampleStorageLen = 0; /*!< max len of samples storage */
 int16_t *sampleStorage = NULL; /*!< here is were the audio data will be stored */
@@ -217,10 +187,10 @@ void Sampler_Init(void)
         sampleRecords[i].sustain = 1.0f;
     }
 
-    vuStoreLen = VuMeterMatrix_GetPtr(2);
-    vuThrInput = VuMeterMatrix_GetPtr(4);
-    vuAbsInput = VuMeterMatrix_GetPtr(5);
-    vuSlwInput = VuMeterMatrix_GetPtr(3);
+    vuStoreLen = VuMeter_GetPtr(2);
+    vuThrInput = VuMeter_GetPtr(4);
+    vuAbsInput = VuMeter_GetPtr(5);
+    vuSlwInput = VuMeter_GetPtr(3);
 }
 
 
@@ -1188,4 +1158,3 @@ void Sampler_AddSection(float pitch_keycenter, uint32_t  offset, uint32_t  end, 
 
     newPatch->valid = true;
 }
-

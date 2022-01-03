@@ -1,46 +1,12 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * this file includes all required function to setup and drive the i2s interface
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+ * Author: Marcel Licence
  */
-
-/**
- * @file i2s_interface.ino
- * @author Marcel Licence
- * @date 13.10.2021
- *
- * @brief  this file includes all required function to setup and drive the i2s interface
- */
-
 
 #ifdef __CDT_PARSER__
 #include <cdt.h>
 #endif
-
 
 #include <driver/i2s.h>
 
@@ -59,7 +25,7 @@ const i2s_port_t i2s_port_number = I2S_NUM_0;
  * for the following implementation
  */
 #ifdef I2S_NODAC
-/* todo integrate code, or external module from hack a day using i2s signal wire as DAC */
+
 #else
 
 bool i2s_write_sample_32ch2(uint8_t *sample);
@@ -168,7 +134,6 @@ bool i2s_write_stereo_samples(float *fl_sample, float *fr_sample)
     }
 }
 
-#ifdef SAMPLE_BUFFER_SIZE
 bool i2s_write_stereo_samples_buff(float *fl_sample, float *fr_sample, const int buffLen)
 {
 #ifdef SAMPLE_SIZE_32BIT
@@ -229,7 +194,6 @@ bool i2s_write_stereo_samples_buff(float *fl_sample, float *fr_sample, const int
         return false;
     }
 }
-#endif /* #ifdef SAMPLE_BUFFER_SIZE */
 
 void i2s_read_stereo_samples(float *fl_sample, float *fr_sample)
 {
@@ -254,10 +218,8 @@ void i2s_read_stereo_samples(float *fl_sample, float *fr_sample)
     *fl_sample = ((float)sampleData.ch[1] * (5.5f / 65535.0f));
 }
 
-#ifdef SAMPLE_BUFFER_SIZE
 void i2s_read_stereo_samples_buff(float *fl_sample, float *fr_sample, const int buffLen)
 {
-#ifdef I2S_DIN_PIN
     static size_t bytes_read = 0;
 
 #ifdef SAMPLE_SIZE_16BIT
@@ -283,15 +245,31 @@ void i2s_read_stereo_samples_buff(float *fl_sample, float *fr_sample, const int 
         fr_sample[n] = ((float)sampleData[n].ch[0] / (16383.0f));
         fl_sample[n] = ((float)sampleData[n].ch[1] / (16383.0f));
     }
-#endif
 }
-#endif /* #ifdef SAMPLE_BUFFER_SIZE */
 
 #endif
 
 /*
  * i2s configuration
  */
+
+#ifdef ESP32_AUDIO_KIT
+
+#ifndef ES8388_ENABLED
+#define I2S_BCLK_PIN IIS_SCLK
+#define I2S_WCLK_PIN IIS_LCLK
+#define I2S_DOUT_PIN IIS_DSIN
+#define I2S_DIN_PIN IIS_DSOUT
+#else
+#define I2S_MCLK_PIN ES8388_PIN_MCLK
+#define I2S_BCLK_PIN ES8388_PIN_SCLK
+#define I2S_WCLK_PIN ES8388_PIN_LRCK
+#define I2S_DOUT_PIN ES8388_PIN_DIN
+#define I2S_DIN_PIN ES8388_PIN_DOUT
+#endif
+
+#endif
+
 i2s_config_t i2s_configuration =
 {
 #ifdef I2S_DIN_PIN
@@ -320,7 +298,7 @@ i2s_config_t i2s_configuration =
     .intr_alloc_flags = 0, // default interrupt priority
     .dma_buf_count = 8,
     .dma_buf_len = 64,
-#ifdef I2S_USE_APLL
+#ifdef ES8388_ENABLED
     .use_apll = true,
 #else
     .use_apll = false,

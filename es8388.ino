@@ -1,51 +1,14 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * es8388.ino
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
- * der GNU General Public License, wie von der Free Software Foundation,
- * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * veröffentlichten Version, weiter verteilen und/oder modifizieren.
- *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
- * OHNE JEDE GEWÄHR,; sogar ohne die implizite
- * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License für weitere Einzelheiten.
- *
- * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
- * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
+ *  Created on: 22.08.2021
+ *      Author: PC
  */
-
-/**
- * @file es8388.ino
- * @author Marcel Licence
- * @date 22.08.2021
- *
- * @brief This module is used to initialize the ES8388
- *
- * @see ESP32 Audio Kit AC101 codec failure - Get synthesizer projects working based on ES8388 - https://youtu.be/8UB3fYPjqSk
- * @see https://github.com/espressif/esp-adf/blob/master/components/audio_hal/driver/es8388/es8388.c
- */
-
 
 #ifdef __CDT_PARSER__
 #include <cdt.h>
 #endif
 
-
-#ifdef ES8388_ENABLED
 /*
  * http://www.everest-semi.com/pdf/ES8388%20DS.pdf
  */
@@ -175,11 +138,19 @@ void es8388_read_all()
     }
 }
 
+#define ES8388_PIN_SDA  18
+#define ES8388_PIN_SCL  23
+
+#define ES8388_PIN_MCLK 0
+#define ES8388_PIN_SCLK 5
+#define ES8388_PIN_LRCK 25
+#define ES8388_PIN_DIN  26
+#define ES8388_PIN_DOUT 35
+
+
 void ES8388_SetADCVOL(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("ADC Volume /db", (vol - 1) * 97 + 0.5);
-#endif
 
     vol *= -192;
     vol += 192;
@@ -197,9 +168,7 @@ void ES8388_SetADCVOL(uint8_t unused, float vol)
 
 void ES8388_SetDACVOL(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("DAC Volume /db", (vol - 1) * 97 + 0.5);
-#endif
 
     vol *= -192;
     vol += 192;
@@ -217,9 +186,7 @@ void ES8388_SetDACVOL(uint8_t unused, float vol)
 
 void ES8388_SetPGAGain(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("PGA Gain /db", vol * 24 + 0.25);
-#endif
 
     vol *= 8;
 
@@ -257,9 +224,7 @@ void ES8388_SetInputCh(uint8_t ch, float var)
         // ES8388_ADCCONTROL2
         ES8388_WriteReg(0x0A, (in << 6) + (in << 4)); // LINSEL , RINSEL , DSSEL , DSR
 
-#ifdef STATUS_ENABLED
         Status_ValueChangedInt("ADC Ch", in);
-#endif
     }
 }
 
@@ -291,17 +256,14 @@ void ES8388_SetMixInCh(uint8_t ch, float var)
         }
         // ES8388_DACCONTROL16
         ES8388_WriteReg(0x26, in + (in << 3)); // LMIXSEL, RMIXSEL
-#ifdef STATUS_ENABLED
+
         Status_ValueChangedInt("Mix In Ch", in);
-#endif
     }
 }
 
 void ES8388_SetIn2OoutVOL(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("In to out volume /db", (vol - 1) * 16 + 0.5);
-#endif
 
     vol *= -5;
     vol += 7;
@@ -340,9 +302,7 @@ void ES8388_SetIn2OoutVOL(uint8_t unused, float vol)
 
 void ES8388_SetOUT1VOL(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("OUT1VOL /db", (vol - 1) * 31 + 0.5);
-#endif
 
     vol *= 0x1E;
 
@@ -359,9 +319,7 @@ void ES8388_SetOUT1VOL(uint8_t unused, float vol)
 
 void ES8388_SetOUT2VOL(uint8_t unused, float vol)
 {
-#ifdef STATUS_ENABLED
     Status_ValueChangedInt("OUT2VOL /db", (vol - 1) * 31 + 0.5);
-#endif
 
     vol *= 0x1E;
 
@@ -518,6 +476,9 @@ void ES8388_Setup()
     ES8388_WriteReg(0x02, 0x00);
 #endif
 
+
+
+
     ES8388_SetInputCh(1, 1);
     ES8388_SetMixInCh(2, 1);
     ES8388_SetPGAGain(0, 1);
@@ -526,6 +487,3 @@ void ES8388_Setup()
     Serial.printf("ES8388 setup finished!\n");
     es8388_read_all();
 }
-
-#endif
-
